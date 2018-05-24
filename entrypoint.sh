@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ ! -z "${WAIT_INT}" ]; then
+  /usr/bin/pipework --wait -i ${WAIT_INT}
+fi
+
 USERNAME=${USERNAME:-user}
 PASSWORD=${PASSWORD:-pass}
 ALLOW=${ALLOW:-192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32}

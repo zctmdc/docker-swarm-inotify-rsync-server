@@ -23,4 +23,5 @@ EXPOSE 873
 CMD ["rsync_server"]
 ENTRYPOINT ["/entrypoint.sh"]
 COPY entrypoint.sh /entrypoint.sh
+COPY pipework /usr/bin/pipework
 RUN chmod 744 /entrypoint.sh
