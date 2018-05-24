@@ -1,5 +1,4 @@
-FROM debian:jessie
-MAINTAINER Kyle Wilcox <kyle@axiomdatascience.com>
+FROM ubuntu:bionic
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 
