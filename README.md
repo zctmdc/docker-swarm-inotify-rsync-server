@@ -1,6 +1,6 @@
 ## rsync-server
 
-A `rsyncd`/`sshd` server in Docker. You know, for moving files.
+A `rsyncd`/`sshd` server in Docker. You know, for moving files.  Based on container by the same name by axiom.  Changes include switching to ubuntu:bionic for base, setting up as auto build, few tweaks on paths and names, addition of pipework for odd network needs.
 
 
 ### tl;dr
@@ -15,18 +15,13 @@ $ docker run \
     -e USERNAME=user \ # rsync username
     -e PASSWORD=pass \ # rsync/ssh password
     -v /your/public.key:/root/.ssh/authorized_keys \ # your public key
-    axiom/rsync-server
+    apnar/rsync-server
 ```
 
 #### `rsyncd`
 
-Please note that `/volume` is the `rsync` volume pointing to `/data`. The data
-will be at `/data` in the container. Use the `VOLUME` parameter to change the
-destination path in the container. Even when changing `VOLUME`, you will still
-`rsync` to `/volume`.
-
 ```
-$ rsync -av /your/folder/ rsync://user@localhost:8000/volume
+$ rsync -av /your/folder/ rsync://user@localhost:8000/data
 Password: pass
 sending incremental file list
 ./
@@ -66,19 +61,20 @@ Variable options (on run)
 * `PASSWORD` - the `rsync` password. defaults to `pass`
 * `VOLUME`   - the path for `rsync`. defaults to `/data`
 * `ALLOW`    - space separated list of allowed sources. defaults to `192.168.0.0/16 172.16.0.0/12`.
+* `WAIT_INT` - wait for this interface to appear before starting services, for use with pipeworks.
 
 
 ##### Simple server on port 873
 
 ```
-$ docker run -p 873:873 axiom/rsync-server
+$ docker run -p 873:873 apnar/rsync-server
 ```
 
 
 ##### Use a volume for the default `/data`
 
 ```
-$ docker run -p 873:873 -v /your/folder:/data axiom/rsync-server
+$ docker run -p 873:873 -v /your/folder:/data apnar/rsync-server
 ```
 
 ##### Set a username and password
@@ -89,7 +85,7 @@ $ docker run \
     -v /your/folder:/data \
     -e USERNAME=admin \
     -e PASSWORD=mysecret \
-    axiom/rsync-server
+    apnar/rsync-server
 ```
 
 ##### Run on a custom port
@@ -100,12 +96,12 @@ $ docker run \
     -v /your/folder:/data \
     -e USERNAME=admin \
     -e PASSWORD=mysecret \
-    axiom/rsync-server
+    apnar/rsync-server
 ```
 
 ```
 $ rsync rsync://admin@localhost:9999
-volume            /data directory
+data            /data directory
 ```
 
 
@@ -118,12 +114,12 @@ $ docker run \
     -e USERNAME=admin \
     -e PASSWORD=mysecret \
     -e VOLUME=/myvolume \
-    axiom/rsync-server
+    data/rsync-server
 ```
 
 ```
 $ rsync rsync://admin@localhost:9999
-volume            /myvolume directory
+data            /myvolume directory
 ```
 
 ##### Allow additional client IPs
@@ -136,7 +132,7 @@ $ docker run \
     -e PASSWORD=mysecret \
     -e VOLUME=/myvolume \
     -e ALLOW=192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 \
-    axiom/rsync-server
+    apnar/rsync-server
 ```
 
 
@@ -148,11 +144,6 @@ If you would like to connect over ssh, you may mount your public key or
 Without setting up an `authorized_keys` file, you will be propted for the
 password (which was specified in the `PASSWORD` variable).
 
-Please note that when using `sshd` **you will be specifying the actual folder
-destination as you would when using SSH.** On the contrary, when using the
-`rsyncd` daemon, you will always be using `/volume`, which maps to `VOLUME`
-inside of the container.
-
 ```
 docker run \
     -v /your/folder:/myvolume \
@@ -162,7 +153,7 @@ docker run \
     -e ALLOW=192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 \
     -v /my/authorized_keys:/root/.ssh/authorized_keys \
     -p 9000:22 \
-    axiom/rsync-server
+    apnar/rsync-server
 ```
 
 ```

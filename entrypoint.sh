@@ -5,8 +5,8 @@ if [ ! -z "${WAIT_INT}" ]; then
   /usr/bin/pipework --wait -i ${WAIT_INT}
 fi
 
-USERNAME=${USERNAME:-user}
-PASSWORD=${PASSWORD:-pass}
+USERNAME=${USERNAME:-rsync}
+PASSWORD=${PASSWORD:-rsync}
 ALLOW=${ALLOW:-192.168.0.0/16 172.16.0.0/12 127.0.0.1/32}
 VOLUME=${VOLUME:-/data}
 
@@ -32,7 +32,7 @@ if [ "$1" = 'rsync_server' ]; then
     max connections = 10
     port = 873
 
-    [volume]
+    [data]
         uid = root
         gid = root
         hosts deny = *
