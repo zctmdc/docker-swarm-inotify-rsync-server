@@ -64,6 +64,8 @@ esac
   echo "Syntax:"
   echo "pipework <hostinterface> [-i containerinterface] [-l localinterfacename] [-a addressfamily] <guest> <ipaddr>/<subnet>[@default_gateway] [macaddr][@vlan]"
   echo "pipework <hostinterface> [-i containerinterface] [-l localinterfacename] <guest> dhcp [macaddr][@vlan]"
+  echo "pipework mac:<hostinterface_macaddress> [-i containerinterface] [-l localinterfacename] [-a addressfamily] <guest> <ipaddr>/<subnet>[@default_gateway] [macaddr][@vlan]"
+  echo "pipework mac:<hostinterface_macaddress> [-i containerinterface] [-l localinterfacename] <guest> dhcp [macaddr][@vlan]"
   echo "pipework route <guest> <route_command>"
   echo "pipework rule <guest> <rule_command>"
   echo "pipework tc <guest> <tc_command>"
@@ -89,6 +91,23 @@ die () {
   warn "$@"
   exit "$status"
 }
+
+if echo $IFNAME | grep -q '^mac:'; then
+  mac_address=$(echo $IFNAME | cut -c5-)
+  ifmatch=
+  for iftest in /sys/class/net/*; do
+    if [ -f $iftest/address ] && [ "$mac_address" = "$(cat $iftest/address)" ]; then
+      ifmatch="$(basename $iftest)"
+      break
+    fi
+  done
+
+  if [ -z "$ifmatch" ]; then
+    die 1 "Mac address $mac_address specified for interface but no host interface matched."
+  else
+    IFNAME=$ifmatch
+  fi
+fi
 
 # First step: determine type of first argument (bridge, physical interface...),
 # Unless "--wait" is set (then skip the whole section)
@@ -173,7 +192,11 @@ done < /proc/mounts
 }
 
 # Try to find a cgroup matching exactly the provided name.
-N=$(find "$CGROUPMNT" -name "$GUESTNAME" | wc -l)
+M=$(find "$CGROUPMNT" -name "$GUESTNAME")
+N=$(echo "$M" | wc -l)
+if [ -z "$M" ] ; then
+    N=0
+fi
 case "$N" in
   0)
     # If we didn't find anything, try to lookup the container with Docker.
@@ -201,6 +224,9 @@ case "$N" in
     fi
     ;;
   1) true ;;
+  2)  # LXC >=3.1.0 returns two entries from the cgroups mount instead of one.
+      echo "$M" | grep -q "lxc\.monitor" || die 1 "Found more than one container matching $GUESTNAME."
+      ;;
   *) die 1 "Found more than one container matching $GUESTNAME." ;;
 esac
 
@@ -386,7 +412,11 @@ elif [ "$IFTYPE" = tc ] ; then
   ip netns exec "$NSPID" tc "$@"
 else
   # Otherwise, run normally.
-  ip link set "$GUEST_IFNAME" netns "$NSPID"
+  if command -v iw && iw dev | awk '$1=="Interface"{print $2}' | grep $GUEST_IFNAME > /dev/null; then
+    iw phy $(iw dev | grep -B 1 $GUEST_IFNAME | grep phy# | sed 's/#//g') set netns $NSPID
+  else
+    ip link set "$GUEST_IFNAME" netns "$NSPID"
+  fi
   ip netns exec "$NSPID" ip link set "$GUEST_IFNAME" name "$CONTAINER_IFNAME"
   [ "$MACADDR" ] && ip netns exec "$NSPID" ip link set dev "$CONTAINER_IFNAME" address "$MACADDR"
 

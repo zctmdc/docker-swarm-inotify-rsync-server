@@ -1,6 +1,8 @@
-FROM ubuntu:bionic
+FROM ubuntu:jammy
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
+LABEL org.opencontainers.image.source=https://github.com/apnar/docker-image-rsync-server
+
 
 RUN apt-get update && apt-get install -y \
     openssh-server \
