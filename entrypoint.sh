@@ -5,10 +5,29 @@ if [ ! -z "${WAIT_INT}" ]; then
   /usr/bin/pipework --wait -i ${WAIT_INT}
 fi
 
+file_env() {
+   local var="$1"
+   local fileVar="${var}_FILE"
+   local def="${2:-}"
+
+   if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+      echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+      exit 1
+   fi
+   local val="$def"
+   if [ "${!var:-}" ]; then
+      val="${!var}"
+   elif [ "${!fileVar:-}" ]; then
+      val="$(< "${!fileVar}")"
+   fi
+   export "$var"="$val"
+   unset "$fileVar"
+}
+
 USERNAME=${USERNAME:-rsync}
-PASSWORD=${PASSWORD:-rsync}
 ALLOW=${ALLOW:-192.168.0.0/16 172.16.0.0/12 127.0.0.1/32}
 VOLUME=${VOLUME:-/data}
+file_env "PASSWORD" "rsync"
 
 if [ "$1" = 'rsync_server' ]; then
 
