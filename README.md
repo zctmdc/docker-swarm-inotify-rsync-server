@@ -57,8 +57,9 @@ total size is 0  speedup is 0.00
 
 Variable options (on run)
 
-* `USERNAME` - the `rsync` username. defaults to `user`
-* `PASSWORD` - the `rsync` password. defaults to `pass`
+* `USERNAME` - the `rsync` username. defaults to `rsync`
+* `PASSWORD` - the `rsync` password. defaults to `rsync`
+* `PASSWORD_FILE` - path to the file containing the `rsync` password
 * `VOLUME`   - the path for `rsync`. defaults to `/data`
 * `ALLOW`    - space separated list of allowed sources. defaults to `192.168.0.0/16 172.16.0.0/12`.
 * `WAIT_INT` - wait for this interface to appear before starting services, for use with pipeworks.
@@ -85,6 +86,20 @@ $ docker run \
     -v /your/folder:/data \
     -e USERNAME=admin \
     -e PASSWORD=mysecret \
+    apnar/rsync-server
+```
+
+##### Use Docker secrets
+
+If you would like to use docker secrets to provide the password for a container
+instance you can pass the filepath to it via PASSWORD_FILE:
+
+```
+$ docker run \
+    -p 873:873 \
+    -v /your/folder:/data \
+    -e USERNAME=admin \
+    -e PASSWORD_FILE=/path/to/password_file \
     apnar/rsync-server
 ```
 
