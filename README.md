@@ -2,12 +2,11 @@
 
 A `rsyncd`/`sshd` server in Docker. You know, for moving files.
 
-
 ### quickstart
 
 Start a server (both `sshd` and `rsyncd` are supported)
 
-```
+```bash
 $ docker run \
     --name rsync-server \ # Name it
     -p 8000:873 \ # rsyncd port
@@ -27,7 +26,7 @@ will be at `/data` in the container. Use the `VOLUME` parameter to change the
 destination path in the container. Even when changing `VOLUME`, you will still
 `rsync` to `/volume`. **It is recommended that you always change the default password of `pass` by setting the `PASSWORD` environmental variable, even if you are using key authentication.**
 
-```
+```bash
 $ rsync -av /your/folder/ rsync://user@localhost:8000/volume
 Password: pass
 sending incremental file list
@@ -40,14 +39,13 @@ sent 166 bytes  received 39 bytes  136.67 bytes/sec
 total size is 0  speedup is 0.00
 ```
 
-
 #### `sshd`
 
 Please note that you are connecting as the `root` and not the user specified in
 the `USERNAME` variable. If you don't supply a key file you will be prompted
 for the `PASSWORD`. **It is recommended that you always change the default password of `pass` by setting the `PASSWORD` environmental variable, even if you are using key authentication.**
 
-```
+```bash
 $ rsync -av -e "ssh -i /your/private.key -p 9000 -l root" /your/folder/ localhost:/data
 sending incremental file list
 ./
@@ -59,7 +57,6 @@ sent 166 bytes  received 31 bytes  131.33 bytes/sec
 total size is 0  speedup is 0.00
 ```
 
-
 ### Usage
 
 Variable options (on run)
@@ -69,23 +66,21 @@ Variable options (on run)
 * `VOLUME`   - the path for `rsync`. defaults to `/data`
 * `ALLOW`    - space separated list of allowed sources. defaults to `192.168.0.0/16 172.16.0.0/12`.
 
-
 ##### Simple server on port 873
 
+```bash
+docker run -p 873:873 axiom/rsync-server
 ```
-$ docker run -p 873:873 axiom/rsync-server
-```
-
 
 ##### Use a volume for the default `/data`
 
-```
-$ docker run -p 873:873 -v /your/folder:/data axiom/rsync-server
+```bash
+docker run -p 873:873 -v /your/folder:/data axiom/rsync-server
 ```
 
 ##### Set a username and password
 
-```
+```bash
 $ docker run \
     -p 873:873 \
     -v /your/folder:/data \
@@ -96,7 +91,7 @@ $ docker run \
 
 ##### Run on a custom port
 
-```
+```bash
 $ docker run \
     -p 9999:873 \
     -v /your/folder:/data \
@@ -105,15 +100,14 @@ $ docker run \
     axiom/rsync-server
 ```
 
-```
+```bash
 $ rsync rsync://admin@localhost:9999
 volume            /data directory
 ```
 
-
 ##### Modify the default volume location
 
-```
+```bash
 $ docker run \
     -p 9999:873 \
     -v /your/folder:/myvolume \
@@ -123,14 +117,14 @@ $ docker run \
     axiom/rsync-server
 ```
 
-```
+```bash
 $ rsync rsync://admin@localhost:9999
 volume            /myvolume directory
 ```
 
 ##### Allow additional client IPs
 
-```
+```bash
 $ docker run \
     -p 9999:873 \
     -v /your/folder:/myvolume \
@@ -140,7 +134,6 @@ $ docker run \
     -e ALLOW=192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 \
     axiom/rsync-server
 ```
-
 
 ##### Over SSH
 
@@ -155,7 +148,7 @@ destination as you would when using SSH.** On the contrary, when using the
 `rsyncd` daemon, you will always be using `/volume`, which maps to `VOLUME`
 inside of the container.
 
-```
+```bash
 docker run \
     -v /your/folder:/myvolume \
     -e USERNAME=admin \
@@ -167,6 +160,67 @@ docker run \
     axiom/rsync-server
 ```
 
+```bash
+rsync -av -e "ssh -i /your/private.key -p 9000 -l root" /your/folder/ localhost:/data
 ```
-$ rsync -av -e "ssh -i /your/private.key -p 9000 -l root" /your/folder/ localhost:/data
-```
+
+#### Inotify rsync when rsyncd
+
+e.g. Use on docker swarm sync config files whithout nfs server
+
+1. create *nginx-stack.yaml*
+
+    ```yaml
+    version: "3.2"
+
+    services:
+    rsyncd:
+        image: zctmdc/inotify-rsync-server
+        environment:
+        - USERNAME=zctmdc
+        - PASSWORD=mysecret
+        volumes:
+        - nginx-conf-d:/data/nginx-conf-d/
+        - sites-enabled:/data/sites-enabled/
+        - acme-sh:/data/acme-sh/
+        deploy:
+        mode: global
+        placement:
+            constraints:
+            - node.labels.dsm != true
+
+    inotify-rsyncd:
+        # extends:
+        #   service: rsyncd
+        # will -> docker compose  -f .\rsyncd-stack.yaml config
+        #     - node.labels.dsm != true
+        #     - node.labels.dsm == true
+        image: zctmdc/inotify-rsync-server
+        environment:
+        - USERNAME=zctmdc
+        - PASSWORD=mysecret
+        - SERVICE_NAME=rsyncd
+        volumes:
+        - nginx-conf-d:/data/nginx-conf-d/
+        - sites-enabled:/data/sites-enabled/
+        - acme-sh:/data/acme-sh/
+        ports:
+        - "873:873"
+        deploy:
+        mode: replicated
+        replicas: 1
+        placement:
+            constraints:
+            - node.labels.dsm == true
+
+    volumes:
+    sites-enabled:
+    nginx-conf-d:
+    acme-sh:
+    ```
+
+2. deploy
+
+    ```bash
+    docker stack deploy -c ./rsyncd-stack.yaml rsyncd --prune
+    ```

@@ -1,0 +1,46 @@
+version: "3.2"
+
+services:
+  rsyncd:
+    image: zctmdc/inotify-rsync-server
+    environment:
+      - USERNAME=zctmdc
+      - PASSWORD=sync_conf_6580
+    volumes:
+      - nginx-conf-d:/data/nginx-conf-d/
+      - nginx-config:/data/nginx-config/
+      - acme-sh:/data/acme-sh/
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.dsm != true
+
+  inotify-rsyncd:
+    # extends:
+    #   service: rsyncd
+    # will -> docker compose  -f .\rsyncd-stack.yaml config
+    #     - node.labels.dsm != true
+    #     - node.labels.dsm == true
+    image: zctmdc/inotify-rsync-server
+    environment:
+      - USERNAME=zctmdc
+      - PASSWORD=sync_conf_6580
+      - SERVICE_NAME=rsyncd
+    volumes:
+      - nginx-conf-d:/data/nginx-conf-d/
+      - nginx-config:/data/nginx-config/
+      - acme-sh:/data/acme-sh/
+    ports:
+      - "873:873"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.dsm == true
+
+volumes:
+  nginx-config:
+  nginx-conf-d:
+  acme-sh:

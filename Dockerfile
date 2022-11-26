@@ -1,11 +1,23 @@
 FROM debian:buster
-MAINTAINER Kyle Wilcox <kyle@axiomdatascience.com>
+ARG name="inotify-rsync-server"
+ARG summary="inotify-rsync-server built on-top of debian:buster"
+LABEL description="${summary}" \
+	maintainer="<zctmdc@outlook.com>" \
+	app.kubernetes.io/name="${name}" \
+	org.opencontainers.image.title="${name}" \
+	org.opencontainers.artifact.description="${summary}" \
+	org.opencontainers.image.url="https://hub.docker.com/r/zctmdc/inotify-rsync-server" \
+	org.opencontainers.image.source="https://github.com/zctmdc/inotify-rsync-server" \
+	org.opencontainers.image.authors="zctmdc@outlook.com" \
+	org.opencontainers.image.description="${summary}" \
+	org.opencontainers.image.documentation="https://github.com/zctmdc/inotify-rsync-server"
+
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 ENV NOTVISIBLE "in users profile"
 
 RUN apt-get update && \
-	apt-get install -y openssh-server rsync && \
+	apt-get install -y openssh-server rsync inotify-tools && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -16,6 +28,10 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 744 /entrypoint.sh
+
+ENV SERVICE_NAME=''
+COPY inotify-rsync.sh /inotify-rsync.sh
+RUN chmod 744 inotify-rsync.sh
 
 EXPOSE 22
 EXPOSE 873
