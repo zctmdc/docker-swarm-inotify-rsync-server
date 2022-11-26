@@ -10,6 +10,9 @@ services:
       - nginx-conf-d:/data/nginx-conf-d/
       - nginx-config:/data/nginx-config/
       - acme-sh:/data/acme-sh/
+    networks:
+      - balanced
+      # - nginx
     deploy:
       mode: global
       placement:
@@ -33,6 +36,9 @@ services:
       - acme-sh:/data/acme-sh/
     ports:
       - "873:873"
+    networks:
+      - balanced
+      # - nginx
     deploy:
       mode: replicated
       replicas: 1
@@ -44,3 +50,11 @@ volumes:
   nginx-config:
   nginx-conf-d:
   acme-sh:
+
+networks:
+  balanced:
+    driver: overlay
+    attachable: true
+  # nginx:
+  #   external: true
+  #   name: nginx_balanced

@@ -177,17 +177,20 @@ e.g. Use on docker swarm sync config files whithout nfs server
     rsyncd:
         image: zctmdc/inotify-rsync-server
         environment:
-        - USERNAME=zctmdc
-        - PASSWORD=mysecret
+            - USERNAME=zctmdc
+            - PASSWORD=mysecret
         volumes:
-        - nginx-conf-d:/data/nginx-conf-d/
-        - sites-enabled:/data/sites-enabled/
-        - acme-sh:/data/acme-sh/
+            - nginx-conf-d:/data/nginx-conf-d/
+            - sites-enabled:/data/sites-enabled/
+            - acme-sh:/data/acme-sh/
+        networks:
+            - balanced
+            # - nginx
         deploy:
-        mode: global
-        placement:
-            constraints:
-            - node.labels.dsm != true
+            mode: global
+            placement:
+                constraints:
+                    - node.labels.dsm != true
 
     inotify-rsyncd:
         # extends:
@@ -197,26 +200,36 @@ e.g. Use on docker swarm sync config files whithout nfs server
         #     - node.labels.dsm == true
         image: zctmdc/inotify-rsync-server
         environment:
-        - USERNAME=zctmdc
-        - PASSWORD=mysecret
-        - SERVICE_NAME=rsyncd
+            - USERNAME=zctmdc
+            - PASSWORD=mysecret
+            - SERVICE_NAME=rsyncd
         volumes:
-        - nginx-conf-d:/data/nginx-conf-d/
-        - sites-enabled:/data/sites-enabled/
-        - acme-sh:/data/acme-sh/
+            - nginx-conf-d:/data/nginx-conf-d/
+            - sites-enabled:/data/sites-enabled/
+            - acme-sh:/data/acme-sh/
         ports:
-        - "873:873"
+            - "873:873"
+        networks:
+            - balanced
+            # - nginx
         deploy:
-        mode: replicated
-        replicas: 1
-        placement:
-            constraints:
-            - node.labels.dsm == true
+            mode: replicated
+            replicas: 1
+            placement:
+                constraints:
+                - node.labels.dsm == true
 
     volumes:
-    sites-enabled:
-    nginx-conf-d:
-    acme-sh:
+        sites-enabled:
+        nginx-conf-d:
+        acme-sh:
+    networks:
+        balanced:
+            driver: overlay
+            attachable: true
+        # nginx:
+        #   external: true
+        #   name: nginx_balanced
     ```
 
 2. deploy
