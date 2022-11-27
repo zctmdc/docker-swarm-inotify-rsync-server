@@ -1,6 +1,121 @@
-# rsync-server
+# inotify-rsync-server
 
 A `rsyncd`/`sshd` server in Docker. You know, for moving files.
+
+## Inotify rsync when rsyncd
+
+e.g. Use on docker swarm sync config files whithout nfs server
+
+1. create *nginx-stack.yaml*
+
+    ```yaml
+    version: "3.2"
+
+    services:
+    rsyncd:
+        image: zctmdc/inotify-rsync-server
+        environment:
+            - USERNAME=zctmdc
+            - PASSWORD=mysecret
+        volumes:
+            - nginx-conf-d:/data/nginx-conf-d/
+            - sites-enabled:/data/sites-enabled/
+            - acme-sh:/data/acme-sh/
+        networks:
+            - balanced
+            # - nginx
+        deploy:
+            mode: global
+            placement:
+                constraints:
+                    - node.labels.es != true
+
+    inotify-rsyncd:
+        # extends:
+        #   service: rsyncd
+        # will -> docker compose  -f .\rsyncd-stack.yaml config
+        #     - node.labels.es != true
+        #     - node.labels.es == true
+        image: zctmdc/inotify-rsync-server
+        environment:
+            - USERNAME=zctmdc
+            - PASSWORD=mysecret
+            - SERVICE_NAME=rsyncd
+        volumes:
+            - nginx-conf-d:/data/nginx-conf-d/
+            - sites-enabled:/data/sites-enabled/
+            - acme-sh:/data/acme-sh/
+        ports:
+            - "873:873"
+        networks:
+            - balanced
+            # - nginx
+        deploy:
+            mode: replicated
+            replicas: 1
+            placement:
+                constraints:
+                - node.labels.es == true
+
+    volumes:
+        sites-enabled:
+        nginx-conf-d:
+        acme-sh:
+    networks:
+        balanced:
+            driver: overlay
+            attachable: true
+        # nginx:
+        #   external: true
+        #   name: nginx_balanced
+    ```
+
+2. deploy
+
+    ```bash
+    docker stack deploy -c ./rsyncd-stack.yaml rsyncd --prune
+    ```
+
+3. quick init files
+
+    ```yaml
+    version: "3.2"
+
+    services:
+        rsyncd-tmp:
+            image: zctmdc/inotify-rsync-server
+            environment:
+                - USERNAME=zctmdc
+                - PASSWORD=sync_conf_6580
+                - SERVICE_NAME=inotify-rsyncd
+            volumes:
+                - ./confs/conf.d:/data/nginx-conf-d/:ro
+                - ./confs/sites-enabled:/data/nginx-sites-enabled/:ro
+                - ./confs/acme-sh:/data/acme-sh/:ro
+            networks:
+                - balanced
+                # nginx:
+                    #   external: true
+                    #   name: nginx_balanced
+    networks:
+        balanced:
+            external: true
+            name: rsyncd_balanced
+    ```
+
+4. conding
+
+Now you can edit fils.
+
+## Why Synology DSM not working
+
+see:
+
+<https://community.synology.com/enu/forum/1/post/130729>  
+  
+<https://community.synology.com/enu/forum/1/post/131600>  
+
+<https://github.com/markdumay/synology-docker>  
 
 ## quickstart
 
@@ -163,87 +278,3 @@ docker run \
 ```bash
 rsync -av -e "ssh -i /your/private.key -p 9000 -l root" /your/folder/ localhost:/data
 ```
-
-### Inotify rsync when rsyncd
-
-e.g. Use on docker swarm sync config files whithout nfs server
-
-1. create *nginx-stack.yaml*
-
-    ```yaml
-    version: "3.2"
-
-    services:
-    rsyncd:
-        image: zctmdc/inotify-rsync-server
-        environment:
-            - USERNAME=zctmdc
-            - PASSWORD=mysecret
-        volumes:
-            - nginx-conf-d:/data/nginx-conf-d/
-            - sites-enabled:/data/sites-enabled/
-            - acme-sh:/data/acme-sh/
-        networks:
-            - balanced
-            # - nginx
-        deploy:
-            mode: global
-            placement:
-                constraints:
-                    - node.labels.es != true
-
-    inotify-rsyncd:
-        # extends:
-        #   service: rsyncd
-        # will -> docker compose  -f .\rsyncd-stack.yaml config
-        #     - node.labels.es != true
-        #     - node.labels.es == true
-        image: zctmdc/inotify-rsync-server
-        environment:
-            - USERNAME=zctmdc
-            - PASSWORD=mysecret
-            - SERVICE_NAME=rsyncd
-        volumes:
-            - nginx-conf-d:/data/nginx-conf-d/
-            - sites-enabled:/data/sites-enabled/
-            - acme-sh:/data/acme-sh/
-        ports:
-            - "873:873"
-        networks:
-            - balanced
-            # - nginx
-        deploy:
-            mode: replicated
-            replicas: 1
-            placement:
-                constraints:
-                - node.labels.es == true
-
-    volumes:
-        sites-enabled:
-        nginx-conf-d:
-        acme-sh:
-    networks:
-        balanced:
-            driver: overlay
-            attachable: true
-        # nginx:
-        #   external: true
-        #   name: nginx_balanced
-    ```
-
-2. deploy
-
-    ```bash
-    docker stack deploy -c ./rsyncd-stack.yaml rsyncd --prune
-    ```
-
-## Why Synology DSM not working
-
-see:
-
--  <https://community.synology.com/enu/forum/1/post/130729>  
-  
--  <https://community.synology.com/enu/forum/1/post/131600>  
-
--  <https://github.com/markdumay/synology-docker>  

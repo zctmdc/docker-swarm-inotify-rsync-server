@@ -20,9 +20,10 @@ rsync_file() {
             rsync -avz $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
         else
             cd $1 &&
-                rsync -avzr ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                rsync -avz ${fisttime:+ -r} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
         fi
     done
+    fisttime=''
 }
 monitor() {
     echo "monitoring $1"
@@ -30,5 +31,6 @@ monitor() {
         rsync_file $1
     done
 }
+fisttime=true
 rsync_file $VOLUME
 monitor $VOLUME
