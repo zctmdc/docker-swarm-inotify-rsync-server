@@ -136,7 +136,7 @@ jobs:
               -e SERVICE_NAMES=rsync-server-inotify \
               ${REGISTRY_USERNAME}/${APP_NAME}:test
 
-          sleep 5
+          sleep 15
           result="$(docker exec -i rsync-server-ip cat /data/test.txt 2>&1)"
           if [[ "${result}" != "init" ]]; then
             echo "test faild: rsync-server-ip - ${result}"
