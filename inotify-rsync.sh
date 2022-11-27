@@ -40,30 +40,7 @@ check_service() {
             echo "${target_syncds}" >>/tmp/tmp_target_syncds.txt
         done
         cp -f /tmp/tmp_target_syncds.txt /tmp/all_target_syncds.txt
-        sleep 30
-    done
-}
-rsync_all() {
-    touch /tmp/Synchronized.txt
-    while true; do
-        echo "rsync_all: checking"
-        if [ ! -s /tmp/all_target_syncds.txt ]; then
-            echo "rsync_file: No target syncds"
-            return
-        fi
-        cat /tmp/all_target_syncds.txt | while read target_syncd; do
-            if [ -z "${target_syncd}" ]; then
-                # echo "rsync_all: target_syncd - blank"
-                continue
-            fi
-            if [ -n "$(grep -e ^${target_syncd}$ /tmp/Synchronized.txt)" ]; then
-                # echo "rsync_all: Synchronized - ${target_syncd}"
-                continue
-            fi
-            echo "rsync all -- ${target_syncd}"
-            rsync -avz $VOLUME --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
-            echo ${target_syncd} >>/tmp/Synchronized.txt
-        done
+        rsync_file $VOLUME
         sleep 30
     done
 }
@@ -122,5 +99,7 @@ monitor() {
 }
 check_service &
 sleep 5
-rsync_all &
-monitor $VOLUME
+while true; do
+    monitor $VOLUME
+    sleep 5
+done
