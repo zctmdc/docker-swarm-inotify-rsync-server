@@ -75,7 +75,7 @@ rsync_file() {
             if [ -z "${target_syncd}" ]; then
                 continue
             fi
-            echo "rsync file: ${target_syncd} -->  $1"
+            echo "rsync file: ${target_syncd} --  $1"
             if [ -f $1 ]; then
                 rsync -az $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             elif [ -d $1 ]; then
