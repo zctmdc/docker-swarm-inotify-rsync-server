@@ -125,7 +125,6 @@ jobs:
               ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           echo init > test.txt
-          sleep 3
           cat ./test.txt
           docker run -d --name rsync-server-inotify-init \
               --network inotify-rsync-server-test \
@@ -143,7 +142,7 @@ jobs:
             exit 1
           fi
           echo modifly > test.txt
-          sleep 1
+          sleep 5
           cat ./test.txt
           result="$(docker exec -i rsync-server-domain cat /data/test.txt 2>&1)"
           if [[ "${result}" != "modifly" ]]; then
@@ -151,7 +150,7 @@ jobs:
             exit 1
           fi
           echo latest > test.txt
-          sleep 1
+          sleep 5
           cat ./test.txt
           result="$(docker exec -i rsync-server-name cat /data/test.txt 2>&1)"
           if [[ "${result}" != "latest" ]]; then
