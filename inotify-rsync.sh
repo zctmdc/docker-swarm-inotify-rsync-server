@@ -30,5 +30,5 @@ monitor() {
         rsync_file $1
     done
 }
-rsync -avzr $VOLUME --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+rsync_file $VOLUME
 monitor $VOLUME
