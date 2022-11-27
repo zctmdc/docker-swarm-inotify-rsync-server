@@ -2,7 +2,8 @@ version: "3.2"
 
 services:
 rsyncd:
-  image: zctmdc/inotify-rsync-server
+  # You can also use tag dev
+  image: zctmdc/inotify-rsync-server:latest
   environment:
     - USERNAME=zctmdc
     - PASSWORD=mysecret
@@ -25,7 +26,7 @@ inotify-rsyncd:
   # will -> docker compose  -f .\rsyncd-stack.yaml config
   #     - node.labels.es != true
   #     - node.labels.es == true
-  image: zctmdc/inotify-rsync-server
+  image: zctmdc/inotify-rsync-server:dev
   environment:
     - USERNAME=zctmdc
     - PASSWORD=mysecret

@@ -2,7 +2,7 @@ version: "3.2"
 
 services:
   rsyncd-tmp:
-    image: zctmdc/inotify-rsync-server
+    image: zctmdc/inotify-rsync-server:dev
     environment:
       - USERNAME=zctmdc
       - PASSWORD=sync_conf_6580
