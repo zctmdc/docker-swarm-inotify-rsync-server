@@ -87,57 +87,73 @@ jobs:
         id: docker-test
         run: |
           echo "test start"
-          docker network create --driver bridge --subnet=172.71.0.0/16 inotify-rsync-server-test
-
+          docker network create --driver bridge --subnet=172.31.0.0/16 inotify-rsync-server-test
+          REGISTRY_USERNAME=${{ secrets.REGISTRY_USERNAME }}
+          APP_NAME=${{ env.APP_NAME }}
+          # REGISTRY_USERNAME=zctmdc
+          # APP_NAME=inotify-rsync-server
           docker run -d --name rsync-server-ip \
+              --network inotify-rsync-server-test \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
-              --ip 172.71.0.31 \
-              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+              -e ALLOW='172.16.0.0/12' \
+              --ip 172.31.0.31 \
+              ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           docker run -d --name rsync-server-domain \
+              --network inotify-rsync-server-test \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
-              --ip 172.71.0.30 \
-              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+              -e ALLOW='172.16.0.0/12' \
+              --ip 172.31.0.30 \
+              ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           docker run -d --name rsync-server-name \
+              --network inotify-rsync-server-test \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
-              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+              -e ALLOW='172.16.0.0/12' \
+              ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           docker run -d --name rsync-server-inotify \
+              --network inotify-rsync-server-test \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
-              -e SERVICE_NAMES=172.71.0.31,syncd.example.com,rsync-server-name \
-              --add-host syncd.example.com:172.71.0.30 \
-              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+              -e ALLOW='172.16.0.0/12' \
+              -e SERVICE_NAMES=172.31.0.31,syncd.example.com,rsync-server-name \
+              --add-host syncd.example.com:172.31.0.30 \
+              ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           echo init > test.txt
           sleep 3
           cat ./test.txt
           docker run -d --name rsync-server-inotify-init \
+              --network inotify-rsync-server-test \
               -v "$(pwd)":/data:ro \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
+              -e ALLOW='172.16.0.0/12' \
               -e SERVICE_NAMES=rsync-server-inotify \
-              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+              ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           sleep 5
           if [[ "$(docker exec -i rsync-server-ip cat /data/test.txt)" != "init" ]]; then
             echo "test faild: rsync-server-ip"
+            exit 1
           fi
           echo modifly > test.txt
           sleep 1
           cat ./test.txt
           if [[ "$(docker exec -i rsync-server-domain cat /data/test.txt)" != "modifly" ]]; then
             echo "test faild: rsync-server-domain"
+            exit 1
           fi
           echo latest > test.txt
           sleep 1
           cat ./test.txt
           if [[ "$(docker exec -i rsync-server-name cat /data/test.txt)" != "latest" ]]; then
             echo "test faild: rsync-server-name"
+            exit 1
           fi
           echo "test pass"
 

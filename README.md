@@ -4,7 +4,7 @@ A `rsyncd`/`sshd` server in Docker. You know, for moving files.
 
 ## inotify-rsync-server
 
-Set environment SERVICE_NAMES="$target_syncd_SERVICE_NAMESs_or_ips" to active [Inotify-rsync-when-rsyncd](#inotify-rsync-when-rsyncdSERVICE_NAMES
+Set environment SERVICE_NAMES="$target_syncd_service_names_or_or_domains_ips" to active [Inotify-rsync-when-rsyncd](#inotify-rsync-when-rsyncd)
 
 ## quickstart
 
@@ -68,7 +68,7 @@ Variable options (on run)
 * `USERNAME` - the `rsync` username. defaults to `user`
 * `PASSWORD` - the `rsync` password. defaults to `pass`
 * `VOLUME`   - the path for `rsync`. defaults to `/data`
-* `ALLOW`    - space separated list of allowed sources. defaults to `192.168.0.0/16 172.16.0.0/12`.
+* `ALLOW`    - space separated list of allowed sources. defaults to `10.0.0.0/8 172.16.0.0/12 192.168.0.0/16`.
 
 ### Simple server on port 873
 
@@ -135,7 +135,7 @@ $ docker run \
     -e USERNAME=admin \
     -e PASSWORD=mysecret \
     -e VOLUME=/myvolume \
-    -e ALLOW=192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 \
+    -e ALLOW=10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 \
     axiom/rsync-server
 ```
 
@@ -158,7 +158,7 @@ docker run \
     -e USERNAME=admin \
     -e PASSWORD=mysecret \
     -e VOLUME=/myvolume \
-    -e ALLOW=192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 \
+    -e ALLOW=10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 \
     -v /my/authorized_keys:/root/.ssh/authorized_keys \
     -p 9000:22 \
     axiom/rsync-server

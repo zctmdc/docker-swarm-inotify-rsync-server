@@ -1,27 +1,28 @@
 #!/bin/bash
+
 set -e
 
 USERNAME=${USERNAME:-user}
 PASSWORD=${PASSWORD:-pass}
-ALLOW=${ALLOW:-192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 10.0.0.0/8}
+ALLOW=${ALLOW:-10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}
 VOLUME=${VOLUME:-/data}
 
 setup_sshd() {
-	if [ -e "/root/.ssh/authorized_keys" ]; then
-		chmod 400 /root/.ssh/authorized_keys
-		chown root:root /root/.ssh/authorized_keys
-	else
-		mkdir -p /root/.ssh
-		chown root:root /root/.ssh
-	fi
-	chmod 750 /root/.ssh
-	echo "root:$PASSWORD" | chpasswd
+    if [ -e "/root/.ssh/authorized_keys" ]; then
+        chmod 400 /root/.ssh/authorized_keys
+        chown root:root /root/.ssh/authorized_keys
+    else
+        mkdir -p /root/.ssh
+        chown root:root /root/.ssh
+    fi
+    chmod 750 /root/.ssh
+    echo "root:$PASSWORD" | chpasswd
 }
 
 setup_rsyncd() {
-	echo "$USERNAME:$PASSWORD" >/etc/rsyncd.secrets
-	chmod 0400 /etc/rsyncd.secrets
-	[ -f /etc/rsyncd.conf ] || cat >/etc/rsyncd.conf <<EOF
+    echo "$USERNAME:$PASSWORD" >/etc/rsyncd.secrets
+    chmod 0400 /etc/rsyncd.secrets
+    [ -f /etc/rsyncd.conf ] || cat >/etc/rsyncd.conf <<EOF
 pid file = /var/run/rsyncd.pid
 log file = /dev/stdout
 timeout = 300
@@ -39,26 +40,26 @@ port = 873
 	auth users = ${USERNAME}
 	secrets file = /etc/rsyncd.secrets
 EOF
-
 }
+
 watch_files() {
-	if [[ -n "${SERVICE_NAMES}" ]]; then
-		echo "inotify will push to ${SERVICE_NAMES}"
-		sh -c /inotify-rsync.sh &
-	fi
+    if [ -n "${SERVICE_NAMES}" ]; then
+        echo "inotify will push to ${SERVICE_NAMES}"
+        /bin/bash /inotify-rsync.sh &
+    fi
 }
 
-if [ "$1" = 'rsync_server' ]; then
-	setup_sshd
-	exec /usr/sbin/sshd &
-	mkdir -p $VOLUME
-	setup_rsyncd
-	watch_files
-	exec /usr/bin/rsync --no-detach --daemon --config /etc/rsyncd.conf "$@"
+if [ "$1" = "rsync_server" ]; then
+    echo "rsync server start"
+    setup_sshd
+    exec /usr/sbin/sshd &
+    mkdir -p $VOLUME
+    setup_rsyncd
+    watch_files
+    exec /usr/bin/rsync --no-detach --daemon --config /etc/rsyncd.conf "$@"
 else
-	setup_sshd
-	watch_files
-	exec /usr/sbin/sshd &
+    setup_sshd
+    exec /usr/sbin/sshd &
 fi
 
 exec "$@"

@@ -28,13 +28,20 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 744 /entrypoint.sh
-
-ENV SERVICE_NAMES=''
 COPY inotify-rsync.sh /inotify-rsync.sh
-RUN chmod 744 inotify-rsync.sh
+RUN chmod 744 /inotify-rsync.sh
+
+ENV USERNAME='admin'
+ENV PASSWORD='mysecret'
+ENV SERVICE_NAMES=''
+ENV ALLOW='10.0.0.0/8 172.16.0.0/12 192.168.0.0/16'
+ENV VOLUME='/data'
 
 EXPOSE 22
 EXPOSE 873
 
-CMD ["rsync_server"]
+VOLUME [ "/data" ]
+
 ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["rsync_server"]
