@@ -9,11 +9,11 @@ on:
   # schedule:
   #   - cron: '44 1 * * *'
   push:
-    branches: ["master"]
+    branches: ["master", "dev"]
     # Publish semver tags as releases.
     # tags: [ 'v*.*.*' ]
   pull_request:
-    branches: ["master"]
+    branches: ["master", "dev"]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -75,9 +75,76 @@ jobs:
             # branch event
             type=ref,event=branch,enable=${{ github.ref != format('refs/heads/{0}', 'master') }}
 
+      - name: Build and load to Docker
+        id: build-and-load
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          load: true
+          tags: ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+
+      - name: Test docker
+        id: docker-test
+        run: |
+          echo "test start"
+          docker network create --driver bridge --subnet=172.71.0.0/16 inotify-rsync-server-test
+
+          docker run -d --name rsync-server-ip \
+              -e USERNAME=admin \
+              -e PASSWORD=mysecret \
+              --ip 172.71.0.31 \
+              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+
+          docker run -d --name rsync-server-domain \
+              -e USERNAME=admin \
+              -e PASSWORD=mysecret \
+              --ip 172.71.0.30 \
+              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+
+          docker run -d --name rsync-server-name \
+              -e USERNAME=admin \
+              -e PASSWORD=mysecret \
+              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+
+          docker run -d --name rsync-server-inotify \
+              -e USERNAME=admin \
+              -e PASSWORD=mysecret \
+              -e SERVICE_NAMES=172.71.0.31,syncd.example.com,rsync-server-name \
+              --add-host syncd.example.com:172.71.0.30 \
+              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+
+          echo init > test.txt
+          sleep 3
+          cat ./test.txt
+          docker run -d --name rsync-server-inotify-init \
+              -v "$(pwd)":/data:ro \
+              -e USERNAME=admin \
+              -e PASSWORD=mysecret \
+              -e SERVICE_NAMES=rsync-server-inotify \
+              ${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:test
+
+          sleep 5
+          if [[ "$(docker exec -i rsync-server-ip cat /data/test.txt)" != "init" ]]; then
+            echo "test faild: rsync-server-ip"
+          fi
+          echo modifly > test.txt
+          sleep 1
+          cat ./test.txt
+          if [[ "$(docker exec -i rsync-server-domain cat /data/test.txt)" != "modifly" ]]; then
+            echo "test faild: rsync-server-domain"
+          fi
+          echo latest > test.txt
+          sleep 1
+          cat ./test.txt
+          if [[ "$(docker exec -i rsync-server-name cat /data/test.txt)" != "latest" ]]; then
+            echo "test faild: rsync-server-name"
+          fi
+          echo "test pass"
+
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
+        if: ${{ github.event_name != 'pull_request' }}
         id: build-and-push
         uses: docker/build-push-action@v3
         with:
@@ -85,9 +152,9 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           platforms: "linux/amd64,linux/arm64,linux/386,linux/arm/v7"
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ secrets.REGISTRY_USERNAME }}/${{ env.APP_NAME }}:buildcache,mode=max
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker

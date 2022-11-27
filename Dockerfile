@@ -29,7 +29,7 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 744 /entrypoint.sh
 
-ENV SERVICE_NAME=''
+ENV SERVICE_NAMES=''
 COPY inotify-rsync.sh /inotify-rsync.sh
 RUN chmod 744 inotify-rsync.sh
 

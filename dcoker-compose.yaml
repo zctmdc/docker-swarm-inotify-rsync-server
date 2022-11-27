@@ -1,0 +1,22 @@
+version: "3.2"
+
+services:
+  rsyncd-tmp:
+    image: zctmdc/inotify-rsync-server
+    environment:
+      - USERNAME=zctmdc
+      - PASSWORD=sync_conf_6580
+      - SERVICE_NAMES=inotify-rsyncd
+    volumes:
+      - ./confs/conf.d:/data/nginx-conf-d/:ro
+      - ./confs/sites-enabled:/data/nginx-sites-enabled/:ro
+      - ./confs/acme-sh:/data/acme-sh/:ro
+    networks:
+      - balanced
+      # nginx:
+      #   external: true
+      #   name: nginx_balanced
+networks:
+  balanced:
+    external: true
+    name: rsyncd_balanced

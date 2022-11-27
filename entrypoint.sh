@@ -42,8 +42,8 @@ EOF
 
 }
 watch_files() {
-	if [[ -n "${SERVICE_NAME}" ]]; then
-		echo "inotify will push to ${SERVICE_NAME}"
+	if [[ -n "${SERVICE_NAMES}" ]]; then
+		echo "inotify will push to ${SERVICE_NAMES}"
 		sh -c /inotify-rsync.sh &
 	fi
 }
