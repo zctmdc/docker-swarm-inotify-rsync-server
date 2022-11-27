@@ -17,7 +17,7 @@ ENV LANG C.UTF-8
 ENV NOTVISIBLE "in users profile"
 
 RUN apt-get update && \
-	apt-get install -y openssh-server rsync inotify-tools && \
+	apt-get install -y openssh-server rsync inotify-tools psmisc && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

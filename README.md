@@ -174,7 +174,7 @@ e.g. Use on docker swarm sync config files whithout nfs server
 
 1. create `inotify-rsyncd-stack.yaml`
 
-    see: [inotify-rsyncd-stack.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/master/inotify-rsyncd-stack.yaml)
+    see: [inotify-rsyncd-stack.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/dev/inotify-rsyncd-stack.yaml)
 
 2. deploy
 
@@ -184,7 +184,7 @@ e.g. Use on docker swarm sync config files whithout nfs server
 
 3. creat `dcoker-compose.yaml`
 
-    see: [dcoker-compose.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/master/dcoker-compose.yaml)
+    see: [dcoker-compose.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/dev/dcoker-compose.yaml)
 
 4. conding
 
