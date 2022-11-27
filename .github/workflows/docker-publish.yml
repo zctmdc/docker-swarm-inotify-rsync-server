@@ -141,7 +141,7 @@ jobs:
             echo "test faild: rsync-server-ip: 'init' - '${result}'"
             exit 1
           fi
-          echo modifly > test.txt
+          echo modifly > ./test/test.txt
           sleep 60
           cat ./test/test.txt
           result="$(docker exec -i rsync-server-domain cat /data/test.txt 2>&1)"
@@ -149,7 +149,7 @@ jobs:
             echo "test faild: rsync-server-domain: 'modifly' - '${result}'"
             exit 1
           fi
-          echo latest > test.txt
+          echo latest > ./test/test.txt
           sleep 60
           cat ./test/test.txt
           result="$(docker exec -i rsync-server-name cat /data/test.txt 2>&1)"
