@@ -128,14 +128,14 @@ jobs:
           cat ./test/test.txt
           docker run -d --name rsync-server-inotify-init \
               --network inotify-rsync-server-test \
-              -v "$(pwd)/test/":/data:ro \
+              -v ./test/:/data:ro \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
               -e ALLOW='172.16.0.0/12' \
               -e SERVICE_NAMES=rsync-server-inotify \
               ${REGISTRY_USERNAME}/${APP_NAME}:test
 
-          sleep 5
+          sleep 60
           result="$(docker exec -i rsync-server-ip cat /data/test.txt 2>&1)"
           if [[ "${result}" != "init" ]]; then
             echo "test faild: rsync-server-ip - ${result}"
