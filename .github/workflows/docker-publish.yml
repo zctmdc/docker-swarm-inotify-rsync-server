@@ -123,6 +123,7 @@ jobs:
               -e SERVICE_NAMES=172.31.0.31,syncd.example.com,rsync-server-name \
               --add-host syncd.example.com:172.31.0.30 \
               ${REGISTRY_USERNAME}/${APP_NAME}:test
+              
           mkdir -p ./test/
           echo init > ./test/test.txt
           cat ./test/test.txt
