@@ -199,3 +199,11 @@ see:
 <https://community.synology.com/enu/forum/1/post/131600>  
 
 <https://github.com/markdumay/synology-docker>  
+
+### 参考
+
+- axiom/rsync-server
+    <https://hub.docker.com/r/axiom/rsync-server>  
+
+- Linux shell实现队列并发任务
+    <https://blogs.wl4g.com/archives/292>

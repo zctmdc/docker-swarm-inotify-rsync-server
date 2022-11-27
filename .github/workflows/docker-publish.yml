@@ -123,19 +123,19 @@ jobs:
               -e SERVICE_NAMES=172.31.0.31,syncd.example.com,rsync-server-name \
               --add-host syncd.example.com:172.31.0.30 \
               ${REGISTRY_USERNAME}/${APP_NAME}:test
-
-          echo init > test.txt
-          cat ./test.txt
+          mkdir -p ./test/
+          echo init > ./test/test.txt
+          cat ./test/test.txt
           docker run -d --name rsync-server-inotify-init \
               --network inotify-rsync-server-test \
-              -v "$(pwd)":/data:ro \
+              -v "$(pwd)/test/":/data:ro \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
               -e ALLOW='172.16.0.0/12' \
               -e SERVICE_NAMES=rsync-server-inotify \
               ${REGISTRY_USERNAME}/${APP_NAME}:test
 
-          sleep 180
+          sleep 5
           result="$(docker exec -i rsync-server-ip cat /data/test.txt 2>&1)"
           if [[ "${result}" != "init" ]]; then
             echo "test faild: rsync-server-ip - ${result}"
@@ -143,7 +143,7 @@ jobs:
           fi
           echo modifly > test.txt
           sleep 5
-          cat ./test.txt
+          cat ./test/test.txt
           result="$(docker exec -i rsync-server-domain cat /data/test.txt 2>&1)"
           if [[ "${result}" != "modifly" ]]; then
             echo "test faild: rsync-server-domain - ${result}"
@@ -151,7 +151,7 @@ jobs:
           fi
           echo latest > test.txt
           sleep 5
-          cat ./test.txt
+          cat ./test/test.txt
           result="$(docker exec -i rsync-server-name cat /data/test.txt 2>&1)"
           if [[ "${result}" != "latest" ]]; then
             echo "test faild: rsync-server-name - ${result}"
