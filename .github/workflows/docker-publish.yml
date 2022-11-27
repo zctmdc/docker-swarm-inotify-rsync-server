@@ -137,22 +137,25 @@ jobs:
               ${REGISTRY_USERNAME}/${APP_NAME}:test
 
           sleep 5
-          if [[ "$(docker exec -i rsync-server-ip cat /data/test.txt)" != "init" ]]; then
-            echo "test faild: rsync-server-ip"
+          result="$(docker exec -i rsync-server-ip cat /data/test.txt 2>&1)"
+          if [[ "${result}" != "init" ]]; then
+            echo "test faild: rsync-server-ip - ${result}"
             exit 1
           fi
           echo modifly > test.txt
           sleep 1
           cat ./test.txt
-          if [[ "$(docker exec -i rsync-server-domain cat /data/test.txt)" != "modifly" ]]; then
-            echo "test faild: rsync-server-domain"
+          result="$(docker exec -i rsync-server-domain cat /data/test.txt 2>&1)"
+          if [[ "${result}" != "modifly" ]]; then
+            echo "test faild: rsync-server-domain - ${result}"
             exit 1
           fi
           echo latest > test.txt
           sleep 1
           cat ./test.txt
-          if [[ "$(docker exec -i rsync-server-name cat /data/test.txt)" != "latest" ]]; then
-            echo "test faild: rsync-server-name"
+          result="$(docker exec -i rsync-server-name cat /data/test.txt 2>&1)"
+          if [[ "${result}" != "latest" ]]; then
+            echo "test faild: rsync-server-name - ${result}"
             exit 1
           fi
           echo "test pass"

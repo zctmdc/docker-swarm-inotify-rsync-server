@@ -33,10 +33,10 @@ rsync_file() {
             fi
             echo "rsync file: ${target_syncd} -->  $1"
             if [ -f $1 ]; then
-                rsync -avz $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                rsync -az $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             else
                 cd $1 &&
-                    rsync -avz ${fistrun:+ -r} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                    rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             fi
         done
     done
@@ -44,10 +44,8 @@ rsync_file() {
 monitor() {
     echo "monitoring $1"
     /usr/bin/inotifywait -mrq --format '%w%f' -e create,close_write,delete $1 | while read line; do
-        rsync_file $1
+        rsync_file $line
     done
 }
-fistrun=true
 rsync_file $VOLUME
-fistrun=''
 monitor $VOLUME
