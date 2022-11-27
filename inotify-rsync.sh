@@ -16,11 +16,11 @@ rsync_file() {
     fi
     l_target_syncds=(${target_syncds//,/ })
     for target_syncd in ${l_target_syncds[@]}; do
-        if [ -f $line ]; then
-            rsync -avz $line --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+        if [ -f $1 ]; then
+            rsync -avz $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
         else
             cd $1 &&
-                rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                rsync -avzr ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
         fi
     done
 }
@@ -30,5 +30,5 @@ monitor() {
         rsync_file $1
     done
 }
-rsync_file $VOLUME
+rsync -avzr $VOLUME --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
 monitor $VOLUME
