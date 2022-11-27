@@ -9,6 +9,7 @@ VOLUME=${VOLUME:-/data}
 echo "${PASSWORD}" >/etc/rsyncd.pass
 chmod 0600 /etc/rsyncd.pass
 monitor() {
+    echo "monitoring $1"
     target_syncds="$(getent hosts tasks.${SERVICE_NAME} | awk '{print $1}' | tr '\n' ',')"
     if [[ -z "${target_syncds}" ]]; then
         target_syncds="${SERVICE_NAME}"
