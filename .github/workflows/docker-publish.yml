@@ -128,7 +128,7 @@ jobs:
           cat ./test/test.txt
           docker run -d --name rsync-server-inotify-init \
               --network inotify-rsync-server-test \
-              -v ./test/:/data:ro \
+              -v $(pwd)/test/:/data:ro \
               -e USERNAME=admin \
               -e PASSWORD=mysecret \
               -e ALLOW='172.16.0.0/12' \
