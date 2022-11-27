@@ -3,7 +3,7 @@ set -e
 
 USERNAME=${USERNAME:-user}
 PASSWORD=${PASSWORD:-pass}
-ALLOW=${ALLOW:-192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32}
+ALLOW=${ALLOW:-192.168.8.0/24 192.168.24.0/24 172.16.0.0/12 127.0.0.1/32 10.0.0.0/8}
 VOLUME=${VOLUME:-/data}
 
 setup_sshd() {
@@ -43,7 +43,8 @@ EOF
 }
 watch_files() {
 	if [[ -n "${SERVICE_NAME}" ]]; then
-		sh -c inotify-rsync.sh &
+		echo "inotify will push to ${SERVICE_NAME}"
+		sh -c /inotify-rsync.sh &
 	fi
 }
 
@@ -52,9 +53,11 @@ if [ "$1" = 'rsync_server' ]; then
 	exec /usr/sbin/sshd &
 	mkdir -p $VOLUME
 	setup_rsyncd
+	watch_files
 	exec /usr/bin/rsync --no-detach --daemon --config /etc/rsyncd.conf "$@"
 else
 	setup_sshd
+	watch_files
 	exec /usr/sbin/sshd &
 fi
 

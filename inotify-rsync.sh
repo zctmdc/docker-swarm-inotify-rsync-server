@@ -17,10 +17,10 @@ monitor() {
     for target_syncd in ${l_target_syncds[@]}; do
         /usr/bin/inotifywait -mrq --format '%w%f' -e create,close_write,delete $1 | while read line; do
             if [ -f $line ]; then
-                rsync -avz $line --delete ${User}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                rsync -avz $line --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             else
                 cd $1 &&
-                    rsync -avz ./ --delete ${User}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                    rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             fi
         done
     done
