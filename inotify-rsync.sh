@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# set -e
 
 SERVICE_NAMES=${SERVICE_NAMES}
 USERNAME=${USERNAME:-user}
