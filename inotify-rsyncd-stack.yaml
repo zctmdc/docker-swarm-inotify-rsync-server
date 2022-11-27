@@ -17,14 +17,14 @@ services:
       mode: global
       placement:
         constraints:
-          - node.labels.dsm != true
+          - node.labels.es != true
 
   inotify-rsyncd:
     # extends:
     #   service: rsyncd
     # will -> docker compose  -f .\rsyncd-stack.yaml config
-    #     - node.labels.dsm != true
-    #     - node.labels.dsm == true
+    #     - node.labels.es != true
+    #     - node.labels.es == true
     image: zctmdc/inotify-rsync-server
     environment:
       - USERNAME=zctmdc
@@ -44,7 +44,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.labels.dsm == true
+          - node.labels.es == true
 
 volumes:
   nginx-config:

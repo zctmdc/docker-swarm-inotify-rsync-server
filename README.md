@@ -1,8 +1,8 @@
-## rsync-server
+# rsync-server
 
 A `rsyncd`/`sshd` server in Docker. You know, for moving files.
 
-### quickstart
+## quickstart
 
 Start a server (both `sshd` and `rsyncd` are supported)
 
@@ -19,7 +19,7 @@ $ docker run \
 
 **Warning** If you are exposing services to the internet be sure to change the default password from `pass` by settings the environmental variable `PASSWORD`.
 
-#### `rsyncd`
+### `rsyncd`
 
 Please note that `/volume` is the `rsync` volume pointing to `/data`. The data
 will be at `/data` in the container. Use the `VOLUME` parameter to change the
@@ -39,7 +39,7 @@ sent 166 bytes  received 39 bytes  136.67 bytes/sec
 total size is 0  speedup is 0.00
 ```
 
-#### `sshd`
+### `sshd`
 
 Please note that you are connecting as the `root` and not the user specified in
 the `USERNAME` variable. If you don't supply a key file you will be prompted
@@ -57,7 +57,7 @@ sent 166 bytes  received 31 bytes  131.33 bytes/sec
 total size is 0  speedup is 0.00
 ```
 
-### Usage
+## Usage
 
 Variable options (on run)
 
@@ -66,19 +66,19 @@ Variable options (on run)
 * `VOLUME`   - the path for `rsync`. defaults to `/data`
 * `ALLOW`    - space separated list of allowed sources. defaults to `192.168.0.0/16 172.16.0.0/12`.
 
-##### Simple server on port 873
+### Simple server on port 873
 
 ```bash
 docker run -p 873:873 axiom/rsync-server
 ```
 
-##### Use a volume for the default `/data`
+### Use a volume for the default `/data`
 
 ```bash
 docker run -p 873:873 -v /your/folder:/data axiom/rsync-server
 ```
 
-##### Set a username and password
+### Set a username and password
 
 ```bash
 $ docker run \
@@ -89,7 +89,7 @@ $ docker run \
     axiom/rsync-server
 ```
 
-##### Run on a custom port
+### Run on a custom port
 
 ```bash
 $ docker run \
@@ -105,7 +105,7 @@ $ rsync rsync://admin@localhost:9999
 volume            /data directory
 ```
 
-##### Modify the default volume location
+### Modify the default volume location
 
 ```bash
 $ docker run \
@@ -122,7 +122,7 @@ $ rsync rsync://admin@localhost:9999
 volume            /myvolume directory
 ```
 
-##### Allow additional client IPs
+### Allow additional client IPs
 
 ```bash
 $ docker run \
@@ -135,7 +135,7 @@ $ docker run \
     axiom/rsync-server
 ```
 
-##### Over SSH
+### Over SSH
 
 If you would like to connect over ssh, you may mount your public key or
 `authorized_keys` file to `/root/.ssh/authorized_keys`.
@@ -164,7 +164,7 @@ docker run \
 rsync -av -e "ssh -i /your/private.key -p 9000 -l root" /your/folder/ localhost:/data
 ```
 
-#### Inotify rsync when rsyncd
+### Inotify rsync when rsyncd
 
 e.g. Use on docker swarm sync config files whithout nfs server
 
@@ -190,14 +190,14 @@ e.g. Use on docker swarm sync config files whithout nfs server
             mode: global
             placement:
                 constraints:
-                    - node.labels.dsm != true
+                    - node.labels.es != true
 
     inotify-rsyncd:
         # extends:
         #   service: rsyncd
         # will -> docker compose  -f .\rsyncd-stack.yaml config
-        #     - node.labels.dsm != true
-        #     - node.labels.dsm == true
+        #     - node.labels.es != true
+        #     - node.labels.es == true
         image: zctmdc/inotify-rsync-server
         environment:
             - USERNAME=zctmdc
@@ -217,7 +217,7 @@ e.g. Use on docker swarm sync config files whithout nfs server
             replicas: 1
             placement:
                 constraints:
-                - node.labels.dsm == true
+                - node.labels.es == true
 
     volumes:
         sites-enabled:
@@ -237,3 +237,13 @@ e.g. Use on docker swarm sync config files whithout nfs server
     ```bash
     docker stack deploy -c ./rsyncd-stack.yaml rsyncd --prune
     ```
+
+## Why Synology DSM not working
+
+see:
+
+-  <https://community.synology.com/enu/forum/1/post/130729>  
+  
+-  <https://community.synology.com/enu/forum/1/post/131600>  
+
+-  <https://github.com/markdumay/synology-docker>  

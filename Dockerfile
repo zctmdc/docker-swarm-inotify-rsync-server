@@ -10,7 +10,7 @@ LABEL description="${summary}" \
 	org.opencontainers.image.source="https://github.com/zctmdc/inotify-rsync-server" \
 	org.opencontainers.image.authors="zctmdc@outlook.com" \
 	org.opencontainers.image.description="${summary}" \
-	org.opencontainers.image.documentation="https://github.com/zctmdc/inotify-rsync-server"
+	org.opencontainers.image.documentation="https://github.com/zctmdc/inotify-rsync-server#inotify-rsync-when-rsyncd"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8

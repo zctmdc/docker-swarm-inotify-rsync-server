@@ -8,22 +8,27 @@ VOLUME=${VOLUME:-/data}
 
 echo "${PASSWORD}" >/etc/rsyncd.pass
 chmod 0600 /etc/rsyncd.pass
-monitor() {
-    echo "monitoring $1"
+
+rsync_file() {
     target_syncds="$(getent hosts tasks.${SERVICE_NAME} | awk '{print $1}' | tr '\n' ',')"
     if [[ -z "${target_syncds}" ]]; then
         target_syncds="${SERVICE_NAME}"
     fi
     l_target_syncds=(${target_syncds//,/ })
     for target_syncd in ${l_target_syncds[@]}; do
-        /usr/bin/inotifywait -mrq --format '%w%f' -e create,close_write,delete $1 | while read line; do
-            if [ -f $line ]; then
-                rsync -avz $line --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
-            else
-                cd $1 &&
-                    rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
-            fi
-        done
+        if [ -f $line ]; then
+            rsync -avz $line --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+        else
+            cd $1 &&
+                rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+        fi
     done
 }
+monitor() {
+    echo "monitoring $1"
+    /usr/bin/inotifywait -mrq --format '%w%f' -e create,close_write,delete $1 | while read line; do
+        rsync_file $1
+    done
+}
+rsync_file $VOLUME
 monitor $VOLUME
