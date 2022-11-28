@@ -1,1 +1,0 @@
-latest run -d --name rsync-server-ip --network inotify-rsync-server-test -e USERNAME=admin -e PASSWORD=mysecret -e ALLOW=172.16.0.0/12 --ip 172.31.0.31 zctmdc/inotify-rsync-server:test
