@@ -170,6 +170,8 @@ rsync -av -e "ssh -i /your/private.key -p 9000 -l root" /your/folder/ localhost:
 
 ## Inotify-rsync-when-rsyncd
 
+`VERBOSE` `TRUE` `true`
+
 e.g. Use on docker swarm sync config files whithout nfs server
 
 1. create `inotify-rsyncd-stack.yaml`

@@ -45,6 +45,9 @@ check_service() {
     done
 }
 rsync_file() {
+    if [ "${VERBOSE^^}" = "TRUE" ]; then
+        use_verbose="true"
+    fi
     if [ ! -s /tmp/all_target_syncds.txt ]; then
         # echo "rsync_file: No target syncds"
         return
@@ -80,10 +83,10 @@ rsync_file() {
                 rsync -az $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             elif [ -d $1 ]; then
                 cd $1 &&
-                    rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                    rsync -az ${use_verbose:+ -v} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             else
                 cd $VOLUME &&
-                    rsync -avz ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                    rsync -az ${use_verbose:+ -v} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             fi
         } &
     done <<<"$(cat /tmp/all_target_syncds.txt)"
