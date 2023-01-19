@@ -184,7 +184,7 @@ e.g. Use on docker swarm sync config files whithout nfs server
     docker stack deploy -c ./inotify-rsyncd-stack.yaml rsyncd --prune
     ```
 
-3. creat `dcoker-compose.yaml`
+3. creat `docker-compose.yaml`
 
     see: [docker-compose.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/dev/docker-compose.yaml)
 
