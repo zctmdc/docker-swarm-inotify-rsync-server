@@ -186,7 +186,7 @@ e.g. Use on docker swarm sync config files whithout nfs server
 
 3. creat `dcoker-compose.yaml`
 
-    see: [dcoker-compose.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/dev/dcoker-compose.yaml)
+    see: [docker-compose.yaml](https://github.com/zctmdc/inotify-rsync-server/blob/dev/docker-compose.yaml)
 
 4. conding
 
