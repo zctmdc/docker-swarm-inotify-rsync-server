@@ -80,13 +80,13 @@ rsync_file() {
             fi
             echo "rsync file: ${target_syncd} --  $1"
             if [ -f $1 ]; then
-                rsync -az $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                rsync -rtz $1 --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             elif [ -d $1 ]; then
                 cd $1 &&
-                    rsync -az ${use_verbose:+ -v} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                    rsync -rtz ${use_verbose:+ -v} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             else
                 cd $VOLUME &&
-                    rsync -az ${use_verbose:+ -v} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
+                    rsync -rtz ${use_verbose:+ -v} ./ --delete ${USERNAME}@${target_syncd}::volume --password-file=/etc/rsyncd.pass
             fi
         } &
     done <<<"$(cat /tmp/all_target_syncds.txt)"
